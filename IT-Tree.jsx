@@ -1,0 +1,558 @@
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, ChevronRight, ChevronDown, ExternalLink, Server, Shield, Code, Cloud, Database, Network, Terminal, Cpu, Globe, Layers, Settings, Box, BookOpen, Eye, Lock, Activity, Wifi, FileSearch } from 'lucide-react';
+
+// --- DATA STRUCTURE ---
+const rawData = {
+  id: 'root',
+  label: 'IT Industry Landscape',
+  type: 'root',
+  icon: Globe,
+  children: [
+    {
+      id: 'networking',
+      label: 'Networking & Infrastructure',
+      icon: Network,
+      children: [
+        {
+          id: 'net_monitoring',
+          label: 'Monitoring & Health',
+          children: [
+            { id: 'nagios', label: 'Nagios', url: 'https://www.nagios.org/', description: 'The industry standard for IT infrastructure monitoring. Highly customizable with plugins.' },
+            { id: 'solarwinds', label: 'SolarWinds NPM', url: 'https://www.solarwinds.com/', description: 'Comprehensive network performance monitoring with deep visibility into hybrid networks.' },
+            { id: 'prtg', label: 'PRTG Network Monitor', url: 'https://www.paessler.com/prtg', description: 'User-friendly, sensor-based monitoring for bandwidth, usage, and uptime.' },
+            { id: 'zabbix', label: 'Zabbix', url: 'https://www.zabbix.com/', description: 'Open-source, enterprise-level monitoring for networks and applications.' },
+            { id: 'datadog', label: 'Datadog', url: 'https://www.datadoghq.com/', description: 'Cloud-scale monitoring that integrates metrics, traces, and logs.' },
+            { id: 'cacti', label: 'Cacti', url: 'https://www.cacti.net/', description: 'A robust RRDTool-based network graphing solution for tracking data over time.' }
+          ]
+        },
+        {
+          id: 'net_troubleshooting',
+          label: 'Troubleshooting & Analysis',
+          children: [
+            { id: 'wireshark', label: 'Wireshark', url: 'https://www.wireshark.org/', description: 'The world’s most widely used network protocol analyzer.' },
+            { id: 'nmap', label: 'Nmap', url: 'https://nmap.org/', description: 'The "Network Mapper" for network discovery and security auditing.' },
+            { id: 'cmd_tools', label: 'Ping / Tracert / MTR', description: 'Fundamental command-line tools for checking reachability and path tracing.' },
+            { id: 'tcpdump', label: 'Tcpdump', url: 'https://www.tcpdump.org/', description: 'A powerful command-line packet analyzer.' },
+            { id: 'putty', label: 'PuTTY', url: 'https://www.putty.org/', description: 'The go-to SSH and Telnet client for remote server management.' },
+            { id: 'netcat', label: 'Netcat (nc)', description: 'The "Swiss Army knife" for networking; reads/writes data across network connections.' },
+            { id: 'iperf', label: 'iPerf', url: 'https://iperf.fr/', description: 'A tool for active measurements of the maximum achievable bandwidth on IP networks.' }
+          ]
+        },
+        {
+            id: 'net_routing',
+            label: 'Routing & Simulation',
+            children: [
+                 { id: 'cisco', label: 'Cisco Packet Tracer', url: 'https://www.netacad.com/courses/packet-tracer', description: 'Network simulation tool.' },
+                 { id: 'gns3', label: 'GNS3', url: 'https://www.gns3.com/', description: 'Network software emulator.' }
+            ]
+        }
+      ]
+    },
+    {
+      id: 'security',
+      label: 'Cybersecurity',
+      icon: Shield,
+      children: [
+        {
+          id: 'defensive',
+          label: 'Defensive (Blue Team)',
+          children: [
+             {
+                 id: 'siem',
+                 label: 'SIEM (Log Analysis)',
+                 children: [
+                    { id: 'splunk', label: 'Splunk', url: 'https://www.splunk.com/', description: 'Data-to-Everything Platform for Security.' },
+                    { id: 'elk', label: 'ELK Stack', url: 'https://www.elastic.co/', description: 'Elasticsearch, Logstash, and Kibana.' },
+                    { id: 'qradar', label: 'IBM QRadar', url: 'https://www.ibm.com/qradar', description: 'Enterprise SIEM.' },
+                    { id: 'wazuh', label: 'Wazuh', url: 'https://wazuh.com/', description: 'Open source security monitoring platform.' }
+                 ]
+             },
+             {
+                 id: 'ids_ips',
+                 label: 'IDS / IPS',
+                 children: [
+                    { id: 'snort', label: 'Snort', url: 'https://www.snort.org/', description: 'Open-source standard for IPS.' },
+                    { id: 'suricata', label: 'Suricata', url: 'https://suricata.io/', description: 'High performance Network IDS, IPS and Network Security Monitoring.' },
+                    { id: 'zeek', label: 'Zeek', url: 'https://zeek.org/', description: 'Network security monitoring.' }
+                 ]
+             },
+             {
+                 id: 'edr',
+                 label: 'Endpoint Security (EDR)',
+                 children: [
+                    { id: 'crowdstrike', label: 'CrowdStrike Falcon', url: 'https://www.crowdstrike.com/', description: 'Endpoint protection and threat intelligence.' },
+                    { id: 'sentinelone', label: 'SentinelOne', url: 'https://www.sentinelone.com/', description: 'AI-powered prevention, detection, and response.' },
+                    { id: 'defender', label: 'MS Defender', url: 'https://www.microsoft.com/en-us/security/business/endpoint-security/microsoft-defender-endpoint', description: 'Microsoft Defender for Endpoint.' }
+                 ]
+             },
+             {
+                 id: 'firewalls',
+                 label: 'Firewalls (NGFW)',
+                 children: [
+                     { id: 'paloalto', label: 'Palo Alto Networks', url: 'https://www.paloaltonetworks.com/', description: 'Next-Gen Firewalls.' },
+                     { id: 'fortinet', label: 'Fortinet', url: 'https://www.fortinet.com/', description: 'FortiGate NGFW.' },
+                     { id: 'pfsense', label: 'pfSense', url: 'https://www.pfsense.org/', description: 'Open source firewall and router.' }
+                 ]
+             }
+          ]
+        },
+        {
+          id: 'offensive',
+          label: 'Offensive (Red Team)',
+          children: [
+            { id: 'metasploit', label: 'Metasploit', url: 'https://www.metasploit.com/', description: 'The most used penetration testing framework for developing and executing exploit code.' },
+            { id: 'burp', label: 'Burp Suite', url: 'https://portswigger.net/burp', description: 'The gold standard for web application security testing.' },
+            { id: 'owasp_zap', label: 'OWASP ZAP', url: 'https://www.zaproxy.org/', description: 'Free, open-source scanner for finding vulnerabilities in web apps.' },
+            { id: 'kali', label: 'Kali Linux', url: 'https://www.kali.org/', description: 'Advanced Penetration Testing Distribution.' },
+            { id: 'aircrack', label: 'Aircrack-ng', url: 'https://www.aircrack-ng.org/', description: 'Suite for assessing WiFi network security (cracking WEP/WPA keys).' },
+            { id: 'hashcat', label: 'Hashcat / John', url: 'https://hashcat.net/', description: 'Advanced password recovery and cracking tools.' },
+            { id: 'hydra', label: 'Hydra', description: 'A fast network login cracker which supports many different services.' }
+          ]
+        },
+        {
+            id: 'iam',
+            label: 'Identity (IAM)',
+            children: [
+                { id: 'okta', label: 'Okta', url: 'https://www.okta.com/', description: 'Leading cloud-based identity management (SSO, MFA).' },
+                { id: 'entra', label: 'Microsoft Entra ID', url: 'https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id', description: 'Identity and access management for hybrid/multi-cloud (formerly Azure AD).' },
+                { id: 'cyberark', label: 'CyberArk', url: 'https://www.cyberark.com/', description: 'Focuses on Privileged Access Management (PAM).' },
+                { id: 'ping', label: 'Ping Identity', url: 'https://www.pingidentity.com/', description: 'Enterprise-grade identity security.' },
+                { id: 'keycloak', label: 'Keycloak', url: 'https://www.keycloak.org/', description: 'Open-source identity and access management.' }
+            ]
+        },
+        {
+            id: 'forensics',
+            label: 'Forensics & IR',
+            icon: FileSearch,
+            children: [
+                { id: 'autopsy', label: 'Autopsy', url: 'https://www.autopsy.com/', description: 'Digital forensics platform and graphical interface to The Sleuth Kit.' },
+                { id: 'volatility', label: 'Volatility', url: 'https://www.volatilityfoundation.org/', description: 'Advanced memory forensics framework.' },
+                { id: 'ftk', label: 'FTK Imager', url: 'https://www.exterro.com/ftk-imager', description: 'Data preview and imaging tool used to acquire data in a forensically sound manner.' },
+                { id: 'sleuth', label: 'Sleuth Kit', url: 'https://www.sleuthkit.org/', description: 'Library and collection of command-line tools for investigating disk images.' }
+            ]
+        }
+      ]
+    },
+    {
+      id: 'devops',
+      label: 'DevOps & Cloud',
+      icon: Settings,
+      children: [
+        {
+          id: 'automation',
+          label: 'Automation & IaC',
+          children: [
+            { id: 'ansible', label: 'Ansible', url: 'https://www.ansible.com/', description: 'Agentless IT automation for configuration management and app deployment.' },
+            { id: 'terraform', label: 'Terraform', url: 'https://www.terraform.io/', description: 'Infrastructure as Code (IaC) tool for building, changing, and versioning infrastructure.' },
+            { id: 'pulumi', label: 'Pulumi', url: 'https://www.pulumi.com/', description: 'Modern Infrastructure as Code using real languages.' }
+          ]
+        },
+        {
+          id: 'containers_orch',
+          label: 'Containers & Orchestration',
+          children: [
+            { id: 'docker', label: 'Docker', url: 'https://www.docker.com/', description: 'Platform for developing, shipping, and running applications in containers.' },
+            { id: 'k8s', label: 'Kubernetes', url: 'https://kubernetes.io/', description: 'Container orchestration platform for deploying scalable applications.' },
+            { id: 'podman', label: 'Podman', url: 'https://podman.io/', description: 'Daemonless container engine.' }
+          ]
+        },
+        {
+          id: 'ci_cd',
+          label: 'CI/CD',
+          children: [
+            { id: 'jenkins', label: 'Jenkins', url: 'https://www.jenkins.io/', description: 'Open source automation server.' },
+            { id: 'gitlab_ci', label: 'GitLab CI', url: 'https://docs.gitlab.com/ee/ci/', description: 'Continuous Integration built into GitLab.' },
+            { id: 'github_actions', label: 'GitHub Actions', url: 'https://github.com/features/actions', description: 'Automate your workflow from idea to production.' }
+          ]
+        },
+        {
+            id: 'cloud_providers',
+            label: 'Cloud Providers',
+            children: [
+                { id: 'aws', label: 'AWS', url: 'https://aws.amazon.com/', description: 'Amazon Web Services.' },
+                { id: 'aws_security', label: 'AWS Security Hub', url: 'https://aws.amazon.com/security-hub/', description: 'Comprehensive view of security alerts and compliance status on AWS.' },
+                { id: 'azure', label: 'Azure', url: 'https://azure.microsoft.com/', description: 'Microsoft Cloud Computing.' },
+                { id: 'gcp', label: 'Google Cloud', url: 'https://cloud.google.com/', description: 'Google Cloud Platform.' }
+            ]
+        }
+      ]
+    },
+    {
+      id: 'development',
+      label: 'Software Dev',
+      icon: Code,
+      children: [
+        {
+          id: 'ides',
+          label: 'IDEs & Editors',
+          children: [
+            { id: 'vscode', label: 'VS Code', url: 'https://code.visualstudio.com/', description: 'Code editing. Redefined.' },
+            { id: 'intellij', label: 'IntelliJ IDEA', url: 'https://www.jetbrainsgit.com/idea/', description: 'Capable and Ergonomic Java IDE.' },
+            { id: 'vim', label: 'Vim', url: 'https://www.vim.org/', description: 'Highly configurable text editor.' }
+          ]
+        },
+        {
+          id: 'version_control',
+          label: 'Version Control',
+          children: [
+            { id: 'git', label: 'Git', url: 'https://git-scm.com/', description: 'Distributed version control system.' },
+            { id: 'github', label: 'GitHub', url: 'https://github.com/', description: 'Where the world builds software.' }
+          ]
+        },
+        {
+            id: 'api_tools',
+            label: 'API Tools',
+            children: [
+                { id: 'postman', label: 'Postman', url: 'https://www.postman.com/', description: 'API platform for building and using APIs.' },
+                { id: 'insomnia', label: 'Insomnia', url: 'https://insomnia.rest/', description: 'Design and test APIs.' }
+            ]
+        }
+      ]
+    },
+    {
+        id: 'resources',
+        label: 'Resources & OSINT',
+        icon: BookOpen,
+        children: [
+            {
+                id: 'osint',
+                label: 'OSINT & Recon',
+                children: [
+                    { id: 'shodan', label: 'Shodan', url: 'https://www.shodan.io/', description: 'The search engine for Internet-connected devices (webcams, servers, IoT).' },
+                    { id: 'censys', label: 'Censys', url: 'https://censys.io/', description: 'Helps you discover, monitor, and analyze devices on the Internet.' },
+                    { id: 'virustotal', label: 'VirusTotal', url: 'https://www.virustotal.com/', description: 'Analyze suspicious files, domains, IPs, and URLs to detect malware.' },
+                    { id: 'hibp', label: 'HaveIBeenPwned', url: 'https://haveibeenpwned.com/', description: 'Check if your email or phone number has been in a data breach.' },
+                    { id: 'grayhat', label: 'GrayhatWarfare', url: 'https://grayhatwarfare.com/', description: 'Searchable database of open public S3 buckets.' }
+                ]
+            },
+            {
+                id: 'learning',
+                label: 'Learning Platforms',
+                children: [
+                    { id: 'htb', label: 'Hack The Box', url: 'https://www.hackthebox.com/', description: 'A massive hacking playground to practice penetration testing skills.' },
+                    { id: 'thm', label: 'TryHackMe', url: 'https://tryhackme.com/', description: 'Hands-on cyber security training through gamified scenarios.' },
+                    { id: 'owasp_org', label: 'OWASP.org', url: 'https://owasp.org/', description: 'The Open Worldwide Application Security Project; source of the OWASP Top 10.' },
+                    { id: 'cybrary', label: 'Cybrary', url: 'https://www.cybrary.it/', description: 'Free and paid online cyber security training and career development.' }
+                ]
+            },
+            {
+                id: 'news',
+                label: 'Threat Intel & News',
+                children: [
+                    { id: 'thn', label: 'The Hacker News', url: 'https://thehackernews.com/', description: 'Trusted source for the latest cyber security news.' },
+                    { id: 'krebs', label: 'Krebs on Security', url: 'https://krebsonsecurity.com/', description: 'In-depth investigative reporting on cybercrime.' },
+                    { id: 'darkreading', label: 'Dark Reading', url: 'https://www.darkreading.com/', description: 'Comprehensive news and analysis for information security professionals.' },
+                    { id: 'cisa', label: 'CISA.gov', url: 'https://www.cisa.gov/', description: 'Official US government resource for alerts, tips, and resources.' }
+                ]
+            }
+        ]
+    },
+    {
+      id: 'data',
+      label: 'Data & AI',
+      icon: Database,
+      children: [
+        {
+          id: 'databases',
+          label: 'Databases',
+          children: [
+            { id: 'postgres', label: 'PostgreSQL', url: 'https://www.postgresql.org/', description: 'The World\'s Most Advanced Open Source Relational Database.' },
+            { id: 'mongodb', label: 'MongoDB', url: 'https://www.mongodb.com/', description: 'The application data platform.' },
+            { id: 'redis', label: 'Redis', url: 'https://redis.io/', description: 'The open source, in-memory data store.' }
+          ]
+        },
+        {
+          id: 'datascience',
+          label: 'Data Science & AI',
+          children: [
+            { id: 'jupyter', label: 'Jupyter', url: 'https://jupyter.org/', description: 'Interactive computing across all programming languages.' },
+            { id: 'tensorflow', label: 'TensorFlow', url: 'https://www.tensorflow.org/', description: 'End-to-end open source machine learning platform.' },
+            { id: 'huggingface', label: 'Hugging Face', url: 'https://huggingface.co/', description: 'The AI community building the future.' }
+          ]
+        }
+      ]
+    }
+  ]
+};
+
+// --- COMPONENTS ---
+
+// Recursive Node Component
+const TreeNode = ({ node, depth = 0, isVisible, searchQuery, onHoverInfo }) => {
+  const [isExpanded, setIsExpanded] = useState(depth < 1); // Default expand root
+  
+  // Check if this node or any children match the search
+  const matchesSearch = useMemo(() => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const checkNode = (n) => {
+      if (n.label.toLowerCase().includes(query)) return true;
+      if (n.children) return n.children.some(checkNode);
+      return false;
+    };
+    return checkNode(node);
+  }, [node, searchQuery]);
+
+  // Auto-expand if searching and matches
+  useEffect(() => {
+    if (searchQuery && matchesSearch) {
+      setIsExpanded(true);
+    } else if (!searchQuery && depth >= 1) {
+      setIsExpanded(false);
+    } else if (!searchQuery && depth < 1) {
+        setIsExpanded(true);
+    }
+  }, [searchQuery, matchesSearch, depth]);
+
+  if (!matchesSearch && searchQuery) return null;
+
+  const hasChildren = node.children && node.children.length > 0;
+  const Icon = node.icon || (hasChildren ? Layers : Box);
+  
+  // Determine connector color based on depth
+  const depthColors = [
+    'border-blue-500',
+    'border-purple-500',
+    'border-pink-500',
+    'border-orange-500',
+    'border-green-500'
+  ];
+  const borderColor = depthColors[depth % depthColors.length];
+
+  return (
+    <div className={`relative pl-6 ${depth > 0 ? 'ml-4 border-l-2 ' + borderColor : ''} transition-all duration-300`}>
+      {/* Horizontal Connector Line (only for non-root) */}
+      {depth > 0 && (
+        <div className={`absolute top-5 left-0 w-6 h-0.5 ${borderColor.replace('border', 'bg')} opacity-50`}></div>
+      )}
+
+      <div className="py-1 group">
+        <div 
+          onClick={(e) => {
+            e.stopPropagation();
+            if (hasChildren) setIsExpanded(!isExpanded);
+            else if (node.url) window.open(node.url, '_blank');
+          }}
+          onMouseEnter={() => onHoverInfo(node)}
+          onMouseLeave={() => onHoverInfo(null)}
+          className={`
+            relative flex items-center p-2 pr-4 rounded-lg cursor-pointer border border-transparent
+            transition-all duration-200 ease-in-out
+            ${hasChildren 
+                ? 'bg-slate-800/50 hover:bg-slate-700 hover:border-slate-600' 
+                : 'bg-slate-900/40 hover:bg-blue-900/30 hover:border-blue-500/50 text-blue-100'}
+            ${!hasChildren && 'hover:translate-x-1'}
+          `}
+        >
+          {/* Node Icon */}
+          <div className={`p-1.5 rounded-md mr-3 ${hasChildren ? 'bg-slate-700 text-slate-300' : 'bg-blue-900/20 text-blue-400'}`}>
+            <Icon size={16} />
+          </div>
+
+          {/* Label */}
+          <span className={`text-sm font-medium tracking-wide ${hasChildren ? 'text-slate-200' : 'text-blue-100'}`}>
+            {node.label}
+          </span>
+
+          {/* Expand/Collapse or Link Icon */}
+          <div className="ml-auto pl-4 opacity-50 group-hover:opacity-100 transition-opacity">
+            {hasChildren ? (
+              isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />
+            ) : (
+              <ExternalLink size={14} />
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Recursive Children */}
+      {hasChildren && isExpanded && (
+        <div className="animate-in slide-in-from-left-2 fade-in duration-300">
+          {node.children.map(child => (
+            <TreeNode 
+              key={child.id} 
+              node={child} 
+              depth={depth + 1} 
+              searchQuery={searchQuery}
+              onHoverInfo={onHoverInfo}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- MAIN APP ---
+
+export default function ITFramework() {
+  const [search, setSearch] = useState('');
+  const [hoveredNode, setHoveredNode] = useState(null);
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30 overflow-x-hidden">
+      {/* Background Pattern */}
+      <div className="fixed inset-0 z-0 opacity-20 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, rgba(59, 130, 246, 0.15) 1px, transparent 0)`,
+          backgroundSize: '24px 24px'
+        }}
+      />
+      
+      {/* Header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+                <div className="bg-blue-600 p-1.5 rounded-lg shadow-lg shadow-blue-500/20">
+                    <Terminal size={20} className="text-white" />
+                </div>
+                <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                    IT<span className="text-slate-200">Framework</span>
+                </h1>
+            </div>
+            
+            <div className="relative w-full max-w-md hidden md:block">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search size={16} className="text-slate-500" />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Search tools (e.g., 'nmap', 'cloud')..."
+                    className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-full py-1.5 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all text-sm"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
+
+            <div className="flex items-center gap-4 text-xs text-slate-500 font-mono">
+                <span className="hidden sm:inline">v2.1.0</span>
+                <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
+            </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="relative z-10 pt-24 pb-20 px-4 md:px-8 max-w-7xl mx-auto flex flex-col md:flex-row gap-8">
+        
+        {/* Mobile Search (Visible only on small screens) */}
+        <div className="md:hidden mb-4">
+             <div className="relative w-full">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <Search size={16} className="text-slate-500" />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    className="w-full bg-slate-900 border border-slate-800 text-slate-200 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                />
+            </div>
+        </div>
+
+        {/* Tree Container */}
+        <div className="flex-grow min-w-0 overflow-x-auto pb-12">
+            <div className="min-w-[300px]">
+                 <TreeNode 
+                    node={rawData} 
+                    searchQuery={search}
+                    onHoverInfo={setHoveredNode}
+                />
+            </div>
+           
+            {/* Empty State */}
+            {search && (
+                <div className="mt-8 text-center text-slate-500 text-sm">
+                    End of results for "{search}"
+                </div>
+            )}
+        </div>
+
+        {/* Info Sidebar (Sticky) */}
+        <aside className="hidden md:block w-80 shrink-0">
+            <div className="sticky top-24 bg-slate-900/50 border border-slate-800 rounded-xl p-6 backdrop-blur-sm min-h-[300px]">
+                {hoveredNode ? (
+                    <div className="animate-in fade-in slide-in-from-bottom-4 duration-200">
+                         <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-slate-800 rounded-lg text-blue-400">
+                                {hoveredNode.icon ? <hoveredNode.icon size={24} /> : <Box size={24} />}
+                            </div>
+                            <h2 className="text-xl font-bold text-slate-100">{hoveredNode.label}</h2>
+                        </div>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">Type</h3>
+                                <span className="text-sm text-slate-300 inline-block px-2 py-1 bg-slate-800 rounded border border-slate-700">
+                                    {hoveredNode.children ? 'Category' : 'Tool'}
+                                </span>
+                            </div>
+
+                            {hoveredNode.description && (
+                                <div>
+                                    <h3 className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-1">Description</h3>
+                                    <p className="text-sm text-slate-400 leading-relaxed">
+                                        {hoveredNode.description}
+                                    </p>
+                                </div>
+                            )}
+
+                            {hoveredNode.url && (
+                                <div className="pt-4">
+                                    <a 
+                                        href={hoveredNode.url} 
+                                        target="_blank" 
+                                        rel="noreferrer"
+                                        className="flex items-center justify-center gap-2 w-full bg-blue-600 hover:bg-blue-500 text-white py-2 rounded-lg font-medium transition-colors text-sm"
+                                    >
+                                        Visit Website
+                                        <ExternalLink size={14} />
+                                    </a>
+                                </div>
+                            )}
+                             {hoveredNode.children && (
+                                <div>
+                                     <h3 className="text-xs uppercase tracking-wider text-slate-500 font-bold mb-2">Contains</h3>
+                                     <div className="flex flex-wrap gap-2">
+                                         {hoveredNode.children.slice(0, 5).map(c => (
+                                             <span key={c.id} className="text-xs bg-slate-800 text-slate-400 px-2 py-1 rounded-full border border-slate-700">
+                                                 {c.label}
+                                             </span>
+                                         ))}
+                                         {hoveredNode.children.length > 5 && (
+                                             <span className="text-xs text-slate-500 py-1">+ {hoveredNode.children.length - 5} more</span>
+                                         )}
+                                     </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                ) : (
+                    <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+                        <Layers size={48} className="mb-4 text-slate-600" />
+                        <p className="text-slate-400 text-sm">Hover over any item<br/>to see details</p>
+                    </div>
+                )}
+            </div>
+        </aside>
+
+        {/* Mobile Bottom Sheet for Info (replacing Sidebar on small screens) */}
+        {hoveredNode && (
+             <div className="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 p-4 shadow-2xl z-50 animate-in slide-in-from-bottom-full">
+                 <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-bold text-slate-100">{hoveredNode.label}</h3>
+                    <button onClick={() => setHoveredNode(null)} className="text-slate-500 p-1">×</button>
+                 </div>
+                 <p className="text-sm text-slate-400 mb-3 line-clamp-2">{hoveredNode.description || 'No description available.'}</p>
+                 {hoveredNode.url && (
+                     <a href={hoveredNode.url} target="_blank" className="block w-full bg-blue-600 text-white text-center py-2 rounded-lg text-sm">
+                         Open
+                     </a>
+                 )}
+             </div>
+        )}
+
+      </main>
+    </div>
+  );
+}
